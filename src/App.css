@@ -1,5 +1,21 @@
+.centered-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;   /* centra verticalmente */
+  justify-content: center;  /* centra horizontalmente */
+  flex-direction: column;
+  text-align: center;
+}
+.background {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url("img/Fondo.png") no-repeat center center fixed;
+  background-size: cover;
+  z-index: -1;
+}
 .casino{ 
   background-color: indigo;
+  z-index: 1;
   border: 1px solid white;
   padding: 1rem;
   border-radius: 5px;
@@ -16,25 +32,68 @@
 
 .slot-container {
   padding: 20px;
+  display: flex; 
+  justify-content: center; 
+  gap: 20px;  
 }
 
-.ganancia{
+.ganancia {
   font-family: "CasinoBase";
+  font-size: 2.5rem;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s;
+}
+.dinero{
+  font-family: "CasinoBase";
+  color: white;
+  font-size: 30px;
 }
 
 .slot {
-  background-color: rgba(99, 99, 99, 0.623);
-  display: inline-block;
-  margin: 20px;
-  padding:20px;
+  width: 80px;
+  height: 80px;
   border: 1px solid white;
-  border-radius: 4px; 
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(99, 99, 99, 0.623);
+  margin: 20px;
 }
 @media (max-width: 464px) {
-    .slot{
-      display:contents ;
-      
-    }
+  .casino {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .slot-container {
+    flex-direction: row;
+    gap: 8px;
+    
+  }
+
+  .slot-column {
+    width: 48px;
+    height: 48px;
+  }
+
+  .slot-item {
+    height: 48px;
+    font-size: 36px;
+  }
+  .fichas-display {
+    font-size: 16px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .spin {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
 }
 
 @font-face {
@@ -72,8 +131,8 @@
 }
 
 .App-header {
-  background: url("img/Fondo.png");
   min-height: 100vh;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,6 +146,12 @@
 .App-link {
   color: #61dafb;
 }
+.ganancia.animate {
+  animation: pulse 0.5s ease;
+}
+.icon-spin.spin-anim {
+  animation: spin 0.8s linear infinite;
+}
 
 @keyframes App-logo-spin {
   from {
@@ -96,3 +161,13 @@
     transform: rotate(360deg);
   }
 }
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
