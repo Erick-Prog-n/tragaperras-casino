@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Inicio from './pages/Inicio';
-import Casino from './components/Casino';
+import Casino from './pages/Casino';
 import GameOver from './pages/GameOver';
 
 function App() {
