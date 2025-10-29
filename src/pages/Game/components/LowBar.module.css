@@ -1,0 +1,33 @@
+.contenedor{
+    /* trabaja de manera horizontal */
+    display: flex;
+    /* ordena los espacios entremedio proporcionalmente */
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: azure;
+    padding: 30px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.botonesIzq {
+    display: flex;
+    gap: 10px;
+}
+
+.botonSpin {
+    display: flex;
+}
+
+.saldo {
+    font-size: 5rem;
+    font-weight: bold;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
