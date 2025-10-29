@@ -29,7 +29,7 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
     if (isAutoSpinning && !isSpinningSlot1 && !isSpinningSlot2 && !isSpinningSlot3) {
       interval = setInterval(() => {
         slotSpin();
-      }, 500); // Spin every 0.5 seconds when auto spinning
+      }, 2000); // Spin every 2 seconds when auto spinning
     }
     return () => clearInterval(interval);
   }, [isAutoSpinning, isSpinningSlot1, isSpinningSlot2, isSpinningSlot3]);
