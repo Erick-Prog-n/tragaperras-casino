@@ -8,7 +8,7 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    background-color: azure;
+    background-color: rgb(66, 255, 255);
     padding: 30px;
     box-sizing: border-box;
     z-index: 1000;
