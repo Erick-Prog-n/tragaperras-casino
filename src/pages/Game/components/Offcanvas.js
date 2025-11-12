@@ -4,8 +4,8 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 import styles from "./Offcanvas.module.css";
 
 // Componente del panel lateral de la tienda
-// Ahora permite comprar múltiples máquinas sin límite
-function CustomOffcanvas({ onBuyMachine, numMachines }) {
+// Ahora permite comprar múltiples máquinas sin límite y punto de guardado
+function CustomOffcanvas({ onBuyMachine, onBuySavePoint, numMachines }) {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
@@ -23,8 +23,10 @@ function CustomOffcanvas({ onBuyMachine, numMachines }) {
         </Offcanvas.Header>
         <Offcanvas.Body className={styles.offcanvasBody}>
           {/* Botón para comprar máquinas, muestra el contador actual */}
-          <button className={styles.shopButton} onClick={onBuyMachine}>Comprar Máquina ({50}) - Tienes {numMachines}</button>
-          <button className={styles.shopButton}>Comprar Item 2</button>
+          <button className={styles.shopButton} onClick={onBuyMachine}>Comprar Máquina (50) - Tienes {numMachines}</button>
+          <button className={styles.shopButton} onClick={onBuySavePoint}>
+            Comprar Punto de Guardado (100)
+          </button>
           <button className={styles.shopButton}>Comprar Item 3</button>
         </Offcanvas.Body>
       </Offcanvas>

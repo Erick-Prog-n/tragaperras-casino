@@ -26,25 +26,21 @@ function Casino() {
   ];
 
   const [allReel, setAllReels] = useState(state);
+  // No longer needed since save point is consumable
+
   const [dinero, setDinero] = useState(() => {
     const saved = localStorage.getItem('casinoDinero');
-    return saved ? parseInt(saved, 10) : 100;
+    return saved ? parseInt(saved, 10) : 0;
   });
   const [apuesta, setApuesta] = useState(10);
   const navigate = useNavigate();
 
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
-  // Estado para el número de máquinas, persistido en localStorage
-  // Permite comprar múltiples máquinas sin límite (excepto dinero)
+  // Estado para el número de máquinas
   const [numMachines, setNumMachines] = useState(() => {
     const saved = localStorage.getItem('numMachines');
     return saved ? parseInt(saved, 10) : 1;
   });
-
-  // Efecto para guardar el número de máquinas en localStorage cada vez que cambia
-  useEffect(() => {
-    localStorage.setItem('numMachines', numMachines.toString());
-  }, [numMachines]);
 
   // Estado para mostrar el overlay de jackpot
   const [jackpotOverlay, setJackpotOverlay] = useState(null); // {amount: number, machineId: number} or null
@@ -121,9 +117,9 @@ function Casino() {
   function resetGame() {
     // Confirmar antes de resetear
     if (window.confirm('¿Estás seguro de que quieres resetear el juego? Perderás todo tu progreso.')) {
-      // Resetear dinero a 100
-      setDinero(100);
-      localStorage.setItem('casinoDinero', '100');
+      // Resetear dinero a 0
+      setDinero(0);
+      localStorage.setItem('casinoDinero', '0');
 
       // Resetear número de máquinas a 1
       setNumMachines(1);
@@ -140,6 +136,7 @@ function Casino() {
 
       // Limpiar cualquier otro dato del localStorage relacionado con el juego
       localStorage.removeItem('hasSecondMachine'); // Por si acaso queda algún residuo
+      localStorage.removeItem('hasSavePoint'); // Reset save point status
 
       alert('Juego reseteado exitosamente. ¡Buena suerte!');
     }
@@ -151,16 +148,30 @@ function Casino() {
     if (dinero >= 50) {
       setDinero(dinero - 50);
       setNumMachines(prev => prev + 1);
-      // Nota: El localStorage se actualiza automáticamente por el useEffect
+      // No automatic saving - only when save point is purchased
     } else {
       alert("No tienes suficiente dinero para comprar una máquina.");
     }
   }
 
-  function moneyUpdate(valor) {
-    setDinero(valor);
-    localStorage.setItem('casinoDinero', valor.toString());
-    if (valor <= 0) {
+  // Función para comprar el punto de guardado
+  function buySavePoint() {
+    if (dinero >= 100) {
+      setDinero(dinero - 100);
+      // Guardar el estado actual (antes de restar el costo)
+      localStorage.setItem('casinoDinero', (dinero - 100).toString());
+      localStorage.setItem('numMachines', numMachines.toString());
+      localStorage.setItem('hasSavePoint', 'true');
+      alert("¡Punto de guardado activado! Tu progreso actual ha sido guardado.");
+    } else {
+      alert("No tienes suficiente dinero para comprar el punto de guardado. (Costo: 100 monedas)");
+    }
+  }
+
+  function updateMoney(newValue) {
+    setDinero(newValue);
+    // No automatic saving - only when save point is purchased
+    if (newValue <= 0) {
       alert("Game Over");
       navigate('/gameover');
     }
@@ -180,7 +191,7 @@ function Casino() {
           🔄
         </button>
       </div>
-      <CustomOffcanvas onBuyMachine={buyMachine} numMachines={numMachines}/>
+      <CustomOffcanvas onBuyMachine={buyMachine} onBuySavePoint={buySavePoint} numMachines={numMachines}/>
       {/* Grid de 4x4 para organizar las máquinas tragamonedas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', justifyItems: 'center' }}>
         {/* Renderiza dinámicamente el número de máquinas basado en numMachines */}

@@ -24,7 +24,12 @@ function GameOver() {
               src={reintentar}
               alt="Botón again"
               style={{ maxWidth: '10%', cursor: 'pointer', marginTop: '20px' }}
-              onClick={() => navigate('/juego')}
+              onClick={() => {
+                // Reset game state to start fresh
+                localStorage.setItem('casinoDinero', '100');
+                localStorage.setItem('numMachines', '1');
+                navigate('/juego');
+              }}
             />
     </div>
   );

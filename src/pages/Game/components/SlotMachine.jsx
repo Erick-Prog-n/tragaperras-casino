@@ -29,7 +29,7 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
     if (isAutoSpinning && !isSpinningSlot1 && !isSpinningSlot2 && !isSpinningSlot3) {
       interval = setInterval(() => {
         slotSpin();
-      }, 2000); // Spin every 2 seconds when auto spinning
+      }, 500); // Spin every 0.5 seconds when auto spinning
     }
     return () => clearInterval(interval);
   }, [isAutoSpinning, isSpinningSlot1, isSpinningSlot2, isSpinningSlot3]);
@@ -70,17 +70,36 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         onJackpot(jackpotAmount, id);
       }
 
-      setDinero(prev => prev - apuesta + jackpotAmount);
+      setDinero(prev => {
+        const newValue = prev - apuesta + jackpotAmount;
+        if (newValue <= 0) {
+          // Navigate to game over if balance reaches 0 or below
+          window.location.href = '/gameover';
+        }
+        return newValue;
+      });
       setShouldAnimate(true);
     } else if (newReel[0] === newReel[1] || newReel[1] === newReel[2] || newReel[0] === newReel[2]) {
       setGanancia(apuesta * 1000 * multiplyPoker);
       setMessage("par");
-      setDinero(prev => prev - apuesta + (apuesta * 1000 * multiplyPoker));
+      setDinero(prev => {
+        const newValue = prev - apuesta + (apuesta * 1000 * multiplyPoker);
+        if (newValue <= 0) {
+          window.location.href = '/gameover';
+        }
+        return newValue;
+      });
       setShouldAnimate(true);
     } else {
       setGanancia(0);
       setMessage("perdiste");
-      setDinero(prev => prev - apuesta);
+      setDinero(prev => {
+        const newValue = prev - apuesta;
+        if (newValue <= 0) {
+          window.location.href = '/gameover';
+        }
+        return newValue;
+      });
       setShouldAnimate(false);
     }
   }
