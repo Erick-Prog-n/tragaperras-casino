@@ -4,38 +4,31 @@ import styles from './SlotColumn.module.css';
 
 // Componente reutilizable para cada máquina tragamonedas
 // Permite tener múltiples máquinas independientes
-function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, isAutoSpinning, onJackpot }) {
+function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, isCoordinatedAutoSpin, spinRound, onJackpot, onWinnings, onMachineFinished }) {
   const [reels, setReels] = useState([allReel[0], allReel[1], allReel[2]]);
   const [message, setMessage] = useState('');
-  const [ganancia, setGanancia] = useState(0);
   const [isSpinningSlot1, setIsSpinningSlot1] = useState(false);
   const [isSpinningSlot2, setIsSpinningSlot2] = useState(false);
   const [isSpinningSlot3, setIsSpinningSlot3] = useState(false);
-  const [shouldAnimate, setShouldAnimate] = useState(false);
   const [finalIndex1, setFinalIndex1] = useState(0);
   const [finalIndex2, setFinalIndex2] = useState(0);
   const [finalIndex3, setFinalIndex3] = useState(0);
+  const [isPoweredOn, setIsPoweredOn] = useState(true);
 
-  useEffect(() => {
-    if (shouldAnimate) {
-      const timer = setTimeout(() => setShouldAnimate(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldAnimate]);
 
-  // Efecto para auto spin cuando isAutoSpinning está activo
+  // Efecto para autospin coordinado
   useEffect(() => {
-    let interval;
-    if (isAutoSpinning && !isSpinningSlot1 && !isSpinningSlot2 && !isSpinningSlot3) {
-      interval = setInterval(() => {
+    if (isCoordinatedAutoSpin && spinRound > 0 && !isSpinningSlot1 && !isSpinningSlot2 && !isSpinningSlot3 && isPoweredOn) {
+      // Pequeño delay para asegurar que todas las máquinas estén listas
+      const timeout = setTimeout(() => {
         slotSpin();
-      }, 500); // Spin every 0.5 seconds when auto spinning
+      }, id * 50); // Delay basado en el ID para evitar colisiones de audio
+      return () => clearTimeout(timeout);
     }
-    return () => clearInterval(interval);
-  }, [isAutoSpinning, isSpinningSlot1, isSpinningSlot2, isSpinningSlot3]);
+  }, [spinRound, isCoordinatedAutoSpin, isSpinningSlot1, isSpinningSlot2, isSpinningSlot3, id, isPoweredOn]);
 
   function slotSpin() {
-    if (isSpinningSlot1 || isSpinningSlot2 || isSpinningSlot3) return;
+    if (isSpinningSlot1 || isSpinningSlot2 || isSpinningSlot3 || !isPoweredOn) return;
 
     const spinSound = spinSoundRef.current;
     spinSound.currentTime = 0;
@@ -54,44 +47,63 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
     setIsSpinningSlot1(true);
   }
 
+  function togglePower() {
+    setIsPoweredOn(prev => !prev);
+  }
+
   function winOrLose(newReel) {
-    let multiplyPoker = 1;
     const isPokerMatch = newReel.filter(item => item.isPoker).length;
-    if (isPokerMatch === 2) multiplyPoker = 5;
-    if (isPokerMatch === 3) multiplyPoker = 10000000;
 
     if (newReel[0] === newReel[1] && newReel[1] === newReel[2]) {
-      const jackpotAmount = apuesta * 5000 * multiplyPoker;
-      setGanancia(jackpotAmount);
+      // Triple (jackpot)
+      let multiplier = 3; // Triple normal
+      if (isPokerMatch === 3) {
+        multiplier = 1000; // Triple poker
+      }
+
+      const winAmount = apuesta * multiplier;
       setMessage("jackpot");
 
       // Si son 3 pokers (jackpot máximo), notificar al componente padre
       if (isPokerMatch === 3) {
-        onJackpot(jackpotAmount, id);
+        onJackpot(winAmount, id);
       }
 
       setDinero(prev => {
-        const newValue = prev - apuesta + jackpotAmount;
+        const newValue = prev - apuesta + winAmount;
         if (newValue <= 0) {
           // Navigate to game over if balance reaches 0 or below
           window.location.href = '/gameover';
         }
         return newValue;
       });
-      setShouldAnimate(true);
+      if (isCoordinatedAutoSpin) {
+        onMachineFinished(winAmount);
+      } else {
+        onWinnings(winAmount);
+      }
     } else if (newReel[0] === newReel[1] || newReel[1] === newReel[2] || newReel[0] === newReel[2]) {
-      setGanancia(apuesta * 1000 * multiplyPoker);
+      // Par
+      let multiplier = 2; // Par normal
+      if (isPokerMatch === 2) {
+        multiplier = 10; // Par de poker
+      }
+
+      const winAmount = apuesta * multiplier;
       setMessage("par");
       setDinero(prev => {
-        const newValue = prev - apuesta + (apuesta * 1000 * multiplyPoker);
+        const newValue = prev - apuesta + winAmount;
         if (newValue <= 0) {
           window.location.href = '/gameover';
         }
         return newValue;
       });
-      setShouldAnimate(true);
+      if (isCoordinatedAutoSpin) {
+        onMachineFinished(winAmount);
+      } else {
+        onWinnings(winAmount);
+      }
     } else {
-      setGanancia(0);
       setMessage("perdiste");
       setDinero(prev => {
         const newValue = prev - apuesta;
@@ -100,14 +112,75 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         }
         return newValue;
       });
-      setShouldAnimate(false);
+      // Reportar 0 ganancias para pérdidas en modo coordinado
+      if (isCoordinatedAutoSpin) {
+        onMachineFinished(0);
+      }
     }
   }
 
   return (
     <div>
+      {/* Botones de control de la máquina */}
+      <div style={{
+        display: 'flex',
+        gap: '5px',
+        justifyContent: 'center',
+        marginBottom: '10px',
+        flexWrap: 'wrap'
+      }}>
+        <button
+          style={{
+            padding: '4px 8px',
+            fontSize: '16px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+          title="Vender máquina por 50 monedas"
+        >
+          💰
+        </button>
+
+        <button
+          style={{
+            padding: '4px 8px',
+            fontSize: '16px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+          title="Mejorar máquina"
+        >
+          ⬆️
+        </button>
+
+        <button
+          onClick={togglePower}
+          style={{
+            padding: '4px 8px',
+            fontSize: '16px',
+            backgroundColor: isPoweredOn ? '#6c757d' : '#343a40',
+            color: 'white',
+            border: 'none',
+            borderRadius: '3px',
+            cursor: 'pointer'
+          }}
+          title={isPoweredOn ? "Apagar máquina" : "Encender máquina"}
+        >
+          {isPoweredOn ? '🔌' : '⚡'}
+        </button>
+      </div>
+
       <p className={styles.resultado}>{message || "SPIN ..."}</p>
-      <div className={styles.casino}>
+      <div className={styles.casino} style={{
+        opacity: isPoweredOn ? 1 : 0.6,
+        filter: isPoweredOn ? 'none' : 'grayscale(30%) brightness(0.8)'
+      }}>
         <div className={styles.slotorder}>
           <SlotColumn
             items={allReel}
@@ -141,14 +214,17 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
             }}
           />
         </div>
-        <button className={styles.spinbuton} onClick={slotSpin} disabled={isSpinningSlot1 || isSpinningSlot2 || isSpinningSlot3}>
+        <button
+          className={styles.spinbuton}
+          onClick={slotSpin}
+          disabled={isSpinningSlot1 || isSpinningSlot2 || isSpinningSlot3 || !isPoweredOn}
+          style={{
+            opacity: isPoweredOn ? 1 : 0.5,
+            filter: isPoweredOn ? 'none' : 'grayscale(50%)'
+          }}
+        >
           SPIN
         </button>
-      </div>
-      <div className="historial">
-        <p className={`${styles.ganancia} ${shouldAnimate ? 'animate' : ''}`} style={{ fontSize: ganancia <= 20 ? '1.5rem' : ganancia <= 100 ? '3rem' : ganancia <= 500 ? '4rem' : '5rem', color: '#FFD700' }}>
-          +{ganancia}
-        </p>
       </div>
     </div>
   );

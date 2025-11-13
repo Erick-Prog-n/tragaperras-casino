@@ -5,18 +5,12 @@ import styles from "./Offcanvas.module.css";
 
 // Componente del panel lateral de la tienda
 // Ahora permite comprar múltiples máquinas sin límite y punto de guardado
-function CustomOffcanvas({ onBuyMachine, onBuySavePoint, numMachines }) {
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+function CustomOffcanvas({ onBuyMachine, onBuySavePoint, numMachines, show, onShow, onHide }) {
+  const handleClose = () => onHide();
+  const handleShow = () => onShow();
 
   return (
     <>
-      <Button variant="primary" onClick={handleShow}>
-        Tienda
-      </Button>
-
       <Offcanvas show={show} onHide={handleClose} className={styles.offcanvas}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Tienda</Offcanvas.Title>

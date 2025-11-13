@@ -14,7 +14,7 @@
     flex: 1;
     margin: 0;
     border: none;
-    background-color: #007bff;
+    background-color: #cc00ff;
     color: white;
     font-size: 1.2rem;
     cursor: pointer;
@@ -22,5 +22,5 @@
 }
 
 .shopButton:hover {
-    background-color: #0056b3;
+    background-color: #cc00ff;
 }

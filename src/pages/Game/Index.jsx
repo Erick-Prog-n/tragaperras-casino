@@ -30,9 +30,9 @@ function Casino() {
 
   const [dinero, setDinero] = useState(() => {
     const saved = localStorage.getItem('casinoDinero');
-    return saved ? parseInt(saved, 10) : 0;
+    return saved ? parseInt(saved, 10) : 200;
   });
-  const [apuesta, setApuesta] = useState(10);
+  const [apuesta, setApuesta] = useState(100);
   const navigate = useNavigate();
 
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
@@ -44,6 +44,19 @@ function Casino() {
 
   // Estado para mostrar el overlay de jackpot
   const [jackpotOverlay, setJackpotOverlay] = useState(null); // {amount: number, machineId: number} or null
+
+  // Estado para las ganancias totales de todas las máquinas
+  const [totalGanancia, setTotalGanancia] = useState(0);
+  const [shouldAnimateTotal, setShouldAnimateTotal] = useState(false);
+
+  // Estado para controlar autospin coordinado
+  const [isCoordinatedAutoSpin, setIsCoordinatedAutoSpin] = useState(false);
+  const [roundWinnings, setRoundWinnings] = useState(0);
+  const [machinesFinished, setMachinesFinished] = useState(0);
+  const [spinRound, setSpinRound] = useState(0);
+
+  // Estado para controlar el offcanvas de la tienda
+  const [showOffcanvas, setShowOffcanvas] = useState(false);
 
   const spinSoundRef = useRef(new Audio('/sounds/spin.mp3'));
   const bgAudioRef = useRef(null);
@@ -85,11 +98,52 @@ function Casino() {
   // El auto spin ahora se maneja individualmente en cada SlotMachine component
 
   function startAutoSpin() {
-    setIsAutoSpinning(true);
+    setIsCoordinatedAutoSpin(true);
+    setSpinRound(1); // Iniciar con ronda 1
   }
 
   function stopAutoSpin() {
-    setIsAutoSpinning(false);
+    setIsCoordinatedAutoSpin(false);
+    setSpinRound(0);
+  }
+
+  // Función para realizar un spin coordinado de todas las máquinas
+  function performCoordinatedSpin() {
+    if (!isCoordinatedAutoSpin) return;
+
+    // Resetear contadores para esta ronda
+    setRoundWinnings(0);
+    setMachinesFinished(0);
+
+    // Incrementar el contador de rondas para que todas las máquinas giren
+    setSpinRound(prev => prev + 1);
+  }
+
+  // Función para manejar cuando una máquina termina su spin
+  function handleMachineFinished(winnings) {
+    setRoundWinnings(prev => prev + winnings);
+    setMachinesFinished(prev => {
+      const newCount = prev + 1;
+      // Si todas las máquinas han terminado
+      if (newCount >= numMachines) {
+        // Mostrar las ganancias totales de la ronda
+        setRoundWinnings(currentRoundWinnings => {
+          if (currentRoundWinnings > 0) {
+            setTotalGanancia(currentRoundWinnings);
+            setShouldAnimateTotal(true);
+            setTimeout(() => setShouldAnimateTotal(false), 2000);
+          }
+
+          // Si el autospin coordinado sigue activo, programar la siguiente ronda
+          if (isCoordinatedAutoSpin) {
+            setTimeout(() => performCoordinatedSpin(), 1000); // Esperar 1 segundo antes de la siguiente ronda
+          }
+
+          return 0; // Resetear para la siguiente ronda
+        });
+      }
+      return newCount;
+    });
   }
 
   // Función para manejar cuando se gana un jackpot (3 pokers)
@@ -117,9 +171,9 @@ function Casino() {
   function resetGame() {
     // Confirmar antes de resetear
     if (window.confirm('¿Estás seguro de que quieres resetear el juego? Perderás todo tu progreso.')) {
-      // Resetear dinero a 0
-      setDinero(0);
-      localStorage.setItem('casinoDinero', '0');
+      // Resetear dinero a 200
+      setDinero(200);
+      localStorage.setItem('casinoDinero', '200');
 
       // Resetear número de máquinas a 1
       setNumMachines(1);
@@ -131,8 +185,8 @@ function Casino() {
       // Ocultar cualquier jackpot overlay
       setJackpotOverlay(null);
 
-      // Resetear apuesta a 10
-      setApuesta(10);
+      // Resetear apuesta a 100
+      setApuesta(100);
 
       // Limpiar cualquier otro dato del localStorage relacionado con el juego
       localStorage.removeItem('hasSecondMachine'); // Por si acaso queda algún residuo
@@ -140,6 +194,13 @@ function Casino() {
 
       alert('Juego reseteado exitosamente. ¡Buena suerte!');
     }
+  }
+
+  // Función para establecer el saldo a 1,000,000
+  function becomeMillionaire() {
+    setDinero(1000000);
+    localStorage.setItem('casinoDinero', '1000000');
+    alert('¡Felicidades! Ahora tienes 1,000,000 de monedas. ¡Disfruta tu fortuna!');
   }
 
   // Función para comprar una nueva máquina
@@ -177,9 +238,19 @@ function Casino() {
     }
   }
 
+  // Función para manejar las ganancias de cada máquina (modo normal)
+  function handleMachineWinnings(amount) {
+    if (!isCoordinatedAutoSpin && amount > 0) {
+      setTotalGanancia(amount);
+      setShouldAnimateTotal(true);
+      // Reset animation after 2 seconds
+      setTimeout(() => setShouldAnimateTotal(false), 2000);
+    }
+  }
+
   return (
-    <>
-      {/* 🔈 Botón de Mute/Unmute, 🎰 Test Jackpot y 🔄 Reset Game */}
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
+      {/* 🔈 Botón de Mute/Unmute, 🎰 Test Jackpot, 💰 Millionaire y 🔄 Reset Game */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 999, display: 'flex', gap: '10px' }}>
         <button onClick={toggleMute} style={{ fontSize: '24px', padding: '4px 8px', cursor: 'pointer' }}>
           {isMuted ? '🔇' : '🔊'}
@@ -187,29 +258,106 @@ function Casino() {
         <button onClick={testJackpot} style={{ fontSize: '24px', padding: '4px 8px', cursor: 'pointer' }} title="Probar Jackpot">
           🎰
         </button>
+        <button onClick={becomeMillionaire} style={{ fontSize: '24px', padding: '4px 8px', cursor: 'pointer' }} title="Convertirse en Millonario">
+          💰
+        </button>
         <button onClick={resetGame} style={{ fontSize: '24px', padding: '4px 8px', cursor: 'pointer' }} title="Resetear Juego">
           🔄
         </button>
       </div>
-      <CustomOffcanvas onBuyMachine={buyMachine} onBuySavePoint={buySavePoint} numMachines={numMachines}/>
-      {/* Grid de 4x4 para organizar las máquinas tragamonedas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', justifyItems: 'center' }}>
-        {/* Renderiza dinámicamente el número de máquinas basado en numMachines */}
-        {Array.from({ length: numMachines }, (_, i) => (
-          <SlotMachine
-            key={i + 1}
-            id={i + 1}
-            allReel={allReel}
-            dinero={dinero}
-            setDinero={setDinero}
-            apuesta={apuesta}
-            spinSoundRef={spinSoundRef}
-            isAutoSpinning={isAutoSpinning}
-            onJackpot={handleJackpot}
-          />
-        ))}
+
+      {/* Botón de Tienda en el borde izquierdo de la página */}
+      <div style={{ position: 'fixed', top: '50%', left: 0, transform: 'translateY(-50%)', zIndex: 999 }}>
+        <button
+          onClick={() => setShowOffcanvas(true)}
+          style={{
+            fontSize: '24px',
+            padding: '8px 12px',
+            cursor: 'pointer',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0 4px 4px 0',
+            boxShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+            marginLeft: '5px'
+          }}
+          title="Abrir Tienda"
+        >
+          Tienda
+        </button>
       </div>
-      <Lowbar dinero={dinero} onSpin={() => {}} onStartAutoSpin={startAutoSpin} onStopAutoSpin={stopAutoSpin}/>
+
+      {/* Display total winnings at top center */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 2000,
+        textAlign: 'center',
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        pointerEvents: 'none' // Para que no interfiera con clics
+      }}>
+        <p className={`ganancia ${shouldAnimateTotal ? 'animate' : ''}`} style={{
+          fontSize: totalGanancia <= 20 ? '1.5rem' : totalGanancia <= 100 ? '3rem' : totalGanancia <= 500 ? '4rem' : '5rem',
+          color: '#FFD700',
+          margin: 0
+        }}>
+          +{totalGanancia}
+        </p>
+      </div>
+
+      <CustomOffcanvas
+        onBuyMachine={buyMachine}
+        onBuySavePoint={buySavePoint}
+        numMachines={numMachines}
+        show={showOffcanvas}
+        onShow={() => setShowOffcanvas(true)}
+        onHide={() => setShowOffcanvas(false)}
+      />
+
+      {/* Contenedor principal del juego */}
+      <div style={{
+        paddingTop: '100px', // Espacio para el display de ganancias
+        paddingBottom: '40px',
+        minHeight: 'calc(100vh - 200px)'
+      }}>
+        {/* Grid de 4x4 para organizar las máquinas tragamonedas */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '20px',
+          justifyItems: 'center',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '0 40px' // Márgenes laterales más amplios
+        }}>
+          {/* Renderiza dinámicamente el número de máquinas basado en numMachines */}
+          {Array.from({ length: numMachines }, (_, i) => (
+            <SlotMachine
+              key={i + 1}
+              id={i + 1}
+              allReel={allReel}
+              dinero={dinero}
+              setDinero={setDinero}
+              apuesta={apuesta}
+              spinSoundRef={spinSoundRef}
+              isCoordinatedAutoSpin={isCoordinatedAutoSpin}
+              spinRound={spinRound}
+              onJackpot={handleJackpot}
+              onWinnings={handleMachineWinnings}
+              onMachineFinished={handleMachineFinished}
+            />
+          ))}
+        </div>
+
+        {/* Barra inferior */}
+        <div style={{ marginTop: '60px' }}>
+          <Lowbar dinero={dinero} onSpin={() => {}} onStartAutoSpin={startAutoSpin} onStopAutoSpin={stopAutoSpin}/>
+        </div>
+      </div>
 
       {/* Overlay de Jackpot - aparece cuando se gana el premio mayor */}
       {jackpotOverlay && (
@@ -257,7 +405,7 @@ function Casino() {
           100% { transform: scale(1); }
         }
       `}</style>
-    </>
+    </div>
   );
 }
 
