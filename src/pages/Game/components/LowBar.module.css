@@ -1,0 +1,72 @@
+.contenedor{
+    /* trabaja de manera horizontal */
+    display: flex;
+    /* ordena los espacios entremedio proporcionalmente */
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: indigo;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 30px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.botonesIzq {
+    display: flex;
+    gap: 10px;
+}
+
+.botonesDerecha {
+    display: flex;
+    gap: 10px;
+}
+
+.botonSpin {
+    display: flex;
+}
+
+.botonStop {
+    padding: 4px 8px;
+    font-size: 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.botonAutoSpin {
+    padding: 4px 8px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.botonTienda {
+    padding: 4px 8px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.saldo {
+    font-size: 5rem;
+    font-weight: bold;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    padding: 1rem;
+}

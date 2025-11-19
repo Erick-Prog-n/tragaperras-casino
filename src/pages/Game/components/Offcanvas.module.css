@@ -1,0 +1,26 @@
+.offcanvas {
+    transition: transform 0.1s ease-in-out;
+}
+
+.offcanvasBody {
+    color: red;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+}
+
+.shopButton {
+    flex: 1;
+    margin: 0;
+    border: none;
+    background-color: #cc00ff;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.shopButton:hover {
+    background-color: #cc00ff;
+}

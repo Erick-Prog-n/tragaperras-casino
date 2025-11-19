@@ -1,0 +1,67 @@
+.slotcolumn {
+  height: 60px;
+  width: 60px;
+  overflow: hidden;
+  border: 2px solid white;
+  border-radius: 6px;
+  margin: 0 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.slotinner {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  min-height: calc(60px); /* N = cantidad total de items renderizados */
+}
+
+.slotitem {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 48px;
+  user-select: none;
+}
+.casino{ 
+  background-color: indigo;
+  z-index: 1;
+  border: 1px solid white;
+  padding: 1rem;
+  border-radius: 5px;
+}
+.resultado{
+  font-family: "CasinoBase";
+  color: white;
+  font-size: 50px;
+  background-color: rgba(36, 33, 63, 0.623);
+  padding: 1rem;
+  border: 1px solid white;
+  border-radius: 5px;
+}
+.slotorder {
+  padding: 20px;
+  display: flex; 
+  justify-content: center; 
+  gap: 20px;  
+}
+.ganancia {
+  font-family: "CasinoBase";
+  font-size: 2.5rem;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s;
+}
+.dinero{
+  font-family: "CasinoBase";
+  color: white;
+  font-size: 30px;
+}
+.spinbuton{
+  background-color: rgba(50, 53, 59, 0.836);
+  border-radius: 4px;
+  width: 100%;
+  padding: .4rem 0;
+  color: aliceblue;
+}
