@@ -60,6 +60,16 @@
     cursor: pointer;
 }
 
+.botonReloj {
+    padding: 4px 8px;
+    font-size: 16px;
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
 .saldo {
     font-size: 5rem;
     font-weight: bold;

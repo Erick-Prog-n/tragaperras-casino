@@ -92,7 +92,7 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         // Detener autospin
         onStopAutoSpin();
         const winAmount = apuesta * 1000 + 100 * globalUpgradeLevel;
-        setMessage("jackpot");
+        setMessage(`+${winAmount}`);
 
         onJackpot(winAmount, id);
 
@@ -110,9 +110,9 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         }
       } else {
         // Perder: restar la mitad del saldo total
-        setMessage("perdiste (alto riesgo)");
+        const loss = Math.floor(dinero / 2);
+        setMessage(`-${loss}`);
         setDinero(prev => {
-          const loss = Math.floor(prev / 2);
           const newValue = prev - loss;
           if (newValue <= 0) {
             window.location.href = '/gameover';
@@ -161,7 +161,7 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         }
 
         let winAmount = apuesta * multiplier + 100 * globalUpgradeLevel;
-        setMessage("par");
+        setMessage(`+${winAmount}`);
         setDinero(prev => {
           const newValue = prev - apuesta + winAmount;
           if (newValue <= 0) {
@@ -175,7 +175,7 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
           onWinnings(winAmount);
         }
       } else {
-        setMessage("perdiste");
+        setMessage(`-${apuesta}`);
         setDinero(prev => {
           const newValue = prev - apuesta;
           if (newValue <= 0) {

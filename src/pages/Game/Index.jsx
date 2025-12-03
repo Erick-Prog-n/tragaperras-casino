@@ -29,7 +29,7 @@ function Casino() {
   const [allReel, setAllReels] = useState(state);
   // No longer needed since save point is consumable
 
-  const hasSavePoint = localStorage.getItem('hasSavePoint') === 'true';
+  const hasSavePoint = true; // Guardado automático activado
 
   const [dinero, setDinero] = useState(() => {
     if (hasSavePoint) {
@@ -79,6 +79,9 @@ function Casino() {
     return 0;
   });
 
+  // Estado para saber si se compró el punto de guardado
+  const [hasBoughtSavePoint, setHasBoughtSavePoint] = useState(() => localStorage.getItem('hasBoughtSavePoint') === 'true');
+
   // Estado para contar máquinas con modo alto riesgo
   const [highRiskCount, setHighRiskCount] = useState(0);
 
@@ -94,6 +97,23 @@ function Casino() {
   const spinSoundRef = useRef(new Audio('/sounds/spin.mp3'));
   const bgAudioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
+
+  // Guardado automático en localStorage
+  useEffect(() => {
+    localStorage.setItem('casinoDinero', dinero.toString());
+  }, [dinero]);
+
+  useEffect(() => {
+    localStorage.setItem('numMachines', numMachines.toString());
+  }, [numMachines]);
+
+  useEffect(() => {
+    localStorage.setItem('globalUpgradeLevel', globalUpgradeLevel.toString());
+  }, [globalUpgradeLevel]);
+
+  useEffect(() => {
+    localStorage.setItem('machineHighRisk', JSON.stringify(machineHighRisk));
+  }, [machineHighRisk]);
 
   useEffect(() => {
     const bgAudio = new Audio('/sounds/background.mp3');
@@ -298,15 +318,41 @@ function Casino() {
     const cost = getSavePointCost();
     if (dinero >= cost) {
       setDinero(dinero - cost);
-      // Guardar el estado actual (antes de restar el costo)
-      localStorage.setItem('casinoDinero', (dinero - cost).toString());
-      localStorage.setItem('numMachines', numMachines.toString());
-      localStorage.setItem('globalUpgradeLevel', globalUpgradeLevel.toString());
-      localStorage.setItem('machineHighRisk', JSON.stringify(machineHighRisk));
-      localStorage.setItem('hasSavePoint', 'true');
-      alert("¡Punto de guardado activado! Tu progreso actual ha sido guardado.");
+      // Guardar snapshot del estado actual justo después de gastar
+      const snapshot = {
+        dinero: dinero - cost,
+        numMachines,
+        globalUpgradeLevel,
+        machineHighRisk: [...machineHighRisk],
+        timestamp: Date.now()
+      };
+      localStorage.setItem('savePointSnapshot', JSON.stringify(snapshot));
+      setHasBoughtSavePoint(true);
+      localStorage.setItem('hasBoughtSavePoint', 'true');
+      alert("¡Punto de guardado creado! Puedes volver a este punto con el botón de reloj.");
     } else {
       alert(`No tienes suficiente dinero para comprar el punto de guardado. (Costo: ${cost} monedas)`);
+    }
+  }
+
+  // Función para cargar el punto de guardado
+  function loadSavePoint() {
+    if (!hasBoughtSavePoint) {
+      alert("No has comprado la mejora de punto de guardado.");
+      return;
+    }
+    const snapshot = localStorage.getItem('savePointSnapshot');
+    if (snapshot) {
+      const data = JSON.parse(snapshot);
+      setDinero(data.dinero);
+      setNumMachines(data.numMachines);
+      setGlobalUpgradeLevel(data.globalUpgradeLevel);
+      setMachineHighRisk(data.machineHighRisk);
+      setHasBoughtSavePoint(false);
+      localStorage.setItem('hasBoughtSavePoint', 'false');
+      alert("¡Vuelto al punto de guardado! El juego continúa desde ese momento. La mejora se ha consumido.");
+    } else {
+      alert("No hay un punto de guardado disponible.");
     }
   }
 
@@ -404,27 +450,6 @@ function Casino() {
         </button>
       </div>
 
-      {/* Display total winnings at top center */}
-      <div style={{
-        position: 'fixed',
-        top: '10px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 2000,
-        textAlign: 'center',
-        width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        pointerEvents: 'none' // Para que no interfiera con clics
-      }}>
-        <p className={`ganancia ${shouldAnimateTotal ? 'animate' : ''}`} style={{
-          fontSize: totalGanancia <= 20 ? '1.5rem' : totalGanancia <= 100 ? '3rem' : totalGanancia <= 500 ? '4rem' : '5rem',
-          color: '#FFD700',
-          margin: 0
-        }}>
-          +{totalGanancia}
-        </p>
-      </div>
 
       <CustomOffcanvas
         onBuyMachine={buyMachine}
@@ -486,7 +511,7 @@ function Casino() {
 
         {/* Barra inferior */}
         <div style={{ marginTop: '60px' }}>
-          <Lowbar dinero={dinero} onSpin={() => {}} onStartAutoSpin={startAutoSpin} onStopAutoSpin={stopAutoSpin} onOpenTienda={() => setShowOffcanvas(true)}/>
+          <Lowbar dinero={dinero} onSpin={() => {}} onStartAutoSpin={startAutoSpin} onStopAutoSpin={stopAutoSpin} onOpenTienda={() => setShowOffcanvas(true)} onLoadSavePoint={loadSavePoint} hasBoughtSavePoint={hasBoughtSavePoint}/>
         </div>
       </div>
 

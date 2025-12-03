@@ -1,13 +1,25 @@
 .offcanvas {
     transition: transform 0.1s ease-in-out;
+    
+}
+
+.offcanvas .btn-close {
+    filter: invert(1);
+}
+
+.offcanvas-header {
+    background-color: #351736;
+    color: black;
 }
 
 .offcanvasBody {
-    color: red;
+    background-color: #351736;
+    color: #C49B46;
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 0;
+    justify-content: center;
 }
 
 .shopButton {
