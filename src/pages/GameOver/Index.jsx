@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import gameoverImg from '../../img/gameover.png';
+import gameoverImg from '../../img/LogoGameOver.png';
 import menu from '../../img/menu.png';
 import reintentar from '../../img/reintentar.png';
 

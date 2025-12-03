@@ -94,7 +94,9 @@ function Casino() {
     return [];
   });
 
-  const spinSoundRef = useRef(new Audio('/sounds/spin.mp3'));
+  const spinSoundRef = useRef(new Audio('/sounds/spin_sound.mp3'));
+  const winSoundRef = useRef(new Audio('/sounds/win_sound.mp3'));
+  const loseSoundRef = useRef(new Audio('/sounds/lose_sound.mp3'));
   const bgAudioRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -134,6 +136,10 @@ function Casino() {
 
   useEffect(() => {
     const bgAudio = bgAudioRef.current;
+    const spinSound = spinSoundRef.current;
+    const winSound = winSoundRef.current;
+    const loseSound = loseSoundRef.current;
+
     if (bgAudio) {
       bgAudio.muted = isMuted;
       if (!isMuted) {
@@ -142,6 +148,11 @@ function Casino() {
         bgAudio.pause();
       }
     }
+
+    // Mute all sound effects
+    spinSound.muted = isMuted;
+    winSound.muted = isMuted;
+    loseSound.muted = isMuted;
   }, [isMuted]);
 
   function toggleMute() {
@@ -494,6 +505,8 @@ function Casino() {
               setDinero={setDinero}
               apuesta={apuesta}
               spinSoundRef={spinSoundRef}
+              winSoundRef={winSoundRef}
+              loseSoundRef={loseSoundRef}
               isCoordinatedAutoSpin={isCoordinatedAutoSpin}
               spinRound={spinRound}
               onJackpot={handleJackpot}

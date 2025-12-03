@@ -4,7 +4,7 @@ import styles from './SlotColumn.module.css';
 
 // Componente reutilizable para cada máquina tragamonedas
 // Permite tener múltiples máquinas independientes
-function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, isCoordinatedAutoSpin, spinRound, onJackpot, onWinnings, onMachineFinished, onSellMachine, globalUpgradeLevel, onUpdateHighRiskCount, initialHighRisk, onUpdateMachineHighRisk, onStopAutoSpin }) {
+function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, winSoundRef, loseSoundRef, isCoordinatedAutoSpin, spinRound, onJackpot, onWinnings, onMachineFinished, onSellMachine, globalUpgradeLevel, onUpdateHighRiskCount, initialHighRisk, onUpdateMachineHighRisk, onStopAutoSpin }) {
   const [reels, setReels] = useState([allReel[0], allReel[1], allReel[2]]);
   const [message, setMessage] = useState('');
   const [isSpinningSlot1, setIsSpinningSlot1] = useState(false);
@@ -85,6 +85,12 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
 
   function winOrLose(newReel) {
     const isPokerMatch = newReel.filter(item => item.isPoker).length;
+    const winSound = winSoundRef?.current;
+    const loseSound = loseSoundRef?.current;
+
+    // Debug: Check if sound refs are available
+    console.log('Win sound ref:', winSound);
+    console.log('Lose sound ref:', loseSound);
 
     if (isHighRisk) {
       // Modo alto riesgo: resultado ya decidido en slotSpin
@@ -93,6 +99,21 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         onStopAutoSpin();
         const winAmount = apuesta * 1000 + 100 * globalUpgradeLevel;
         setMessage(`+${winAmount}`);
+
+        // Play win sound with error handling
+        if (winSound) {
+          try {
+            winSound.currentTime = 0;
+            winSound.volume = 0.5;
+            winSound.play().catch(error => {
+              console.error('Error playing win sound:', error);
+            });
+          } catch (error) {
+            console.error('Win sound playback failed:', error);
+          }
+        } else {
+          console.warn('Win sound reference is null');
+        }
 
         onJackpot(winAmount, id);
 
@@ -112,6 +133,22 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         // Perder: restar la mitad del saldo total
         const loss = Math.floor(dinero / 2);
         setMessage(`-${loss}`);
+
+        // Play lose sound with error handling
+        if (loseSound) {
+          try {
+            loseSound.currentTime = 0;
+            loseSound.volume = 0.5;
+            loseSound.play().catch(error => {
+              console.error('Error playing lose sound:', error);
+            });
+          } catch (error) {
+            console.error('Lose sound playback failed:', error);
+          }
+        } else {
+          console.warn('Lose sound reference is null');
+        }
+
         setDinero(prev => {
           const newValue = prev - loss;
           if (newValue <= 0) {
@@ -134,6 +171,21 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
 
         let winAmount = apuesta * multiplier + 100 * globalUpgradeLevel;
         setMessage("jackpot");
+
+        // Play win sound with error handling
+        if (winSound) {
+          try {
+            winSound.currentTime = 0;
+            winSound.volume = 0.5;
+            winSound.play().catch(error => {
+              console.error('Error playing win sound:', error);
+            });
+          } catch (error) {
+            console.error('Win sound playback failed:', error);
+          }
+        } else {
+          console.warn('Win sound reference is null');
+        }
 
         // Si son 3 pokers (jackpot máximo), notificar al componente padre
         if (isPokerMatch === 3) {
@@ -162,6 +214,22 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
 
         let winAmount = apuesta * multiplier + 100 * globalUpgradeLevel;
         setMessage(`+${winAmount}`);
+
+        // Play win sound with error handling
+        if (winSound) {
+          try {
+            winSound.currentTime = 0;
+            winSound.volume = 0.5;
+            winSound.play().catch(error => {
+              console.error('Error playing win sound:', error);
+            });
+          } catch (error) {
+            console.error('Win sound playback failed:', error);
+          }
+        } else {
+          console.warn('Win sound reference is null');
+        }
+
         setDinero(prev => {
           const newValue = prev - apuesta + winAmount;
           if (newValue <= 0) {
@@ -176,6 +244,22 @@ function SlotMachine({ id, allReel, dinero, setDinero, apuesta, spinSoundRef, is
         }
       } else {
         setMessage(`-${apuesta}`);
+
+        // Play lose sound with error handling
+        if (loseSound) {
+          try {
+            loseSound.currentTime = 0;
+            loseSound.volume = 0.5;
+            loseSound.play().catch(error => {
+              console.error('Error playing lose sound:', error);
+            });
+          } catch (error) {
+            console.error('Lose sound playback failed:', error);
+          }
+        } else {
+          console.warn('Lose sound reference is null');
+        }
+
         setDinero(prev => {
           const newValue = prev - apuesta;
           if (newValue <= 0) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import bienvenidaImg from '../../img/bienvenida.png';
+import bienvenidaImg from '../../img/LogoIncio.png';
 import jugarImg from '../../img/jugar.png';
 
 function Inicio() {
